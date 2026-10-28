@@ -1,7 +1,7 @@
 /**
  * LLM Chat Application Template
  *
- * A simple chat application using Cloudflare Workers AI.
+ * Fly AI Chat application powered by flytripvisa.site.
  * This template demonstrates how to implement an LLM-powered chat interface with
  * streaming responses using Server-Sent Events (SSE).
  *
@@ -15,7 +15,7 @@ const MODEL_ID = "@cf/meta/llama-3.1-8b-instruct-fp8";
 
 // Default system prompt
 const SYSTEM_PROMPT =
-	"You are a helpful, friendly assistant. Provide concise and accurate responses.";
+	"You are a Fly AI By flytripvisa.site , Travel, Visa, Flights Hotels Souppot Assistant. Provide concise and accurate responses.";
 
 export default {
 	/**
