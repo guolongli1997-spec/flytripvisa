@@ -1,6 +1,6 @@
 {
 	"name": "flytripvisa",
-	"description": "A simple chat application powered by Cloudflare Workers AI",
+	"description": "Fly AI Chat application powered by flytripvisa.site",
 	"cloudflare": {
 		"label": "LLM Chat App",
 		"products": [
