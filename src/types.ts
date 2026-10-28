@@ -15,6 +15,12 @@ export interface Env {
 }
 
 /**
+	 * Telegram Bot Token for flytripvisaBot
+	 */
+	TELEGRAM_BOT_TOKEN: string;
+}
+
+/**
  * Represents a chat message.
  */
 export interface ChatMessage {
