@@ -15,20 +15,33 @@ let chatHistory = [
 	{
 		role: "assistant",
 		content:
-			"Hello! I'm an Fly AI hat app powered by flytripvisa.site . How can I help you today?",
+			"Hello! I'm an Fly AI chat app powered by flytripvisa.site. How can I help you today?",
 	},
 ];
 let isProcessing = false;
 
+function scrollToBottom() {
+	chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function resizeInput() {
+	userInput.style.height = "auto";
+	userInput.style.height = Math.min(userInput.scrollHeight, 140) + "px";
+}
+
+function updateSendState() {
+	sendButton.disabled = isProcessing || userInput.value.trim() === "";
+}
+
 // Auto-resize textarea as user types
 userInput.addEventListener("input", function () {
-	this.style.height = "auto";
-	this.style.height = this.scrollHeight + "px";
+	resizeInput();
+	updateSendState();
 });
 
 // Send message on Enter (without Shift)
 userInput.addEventListener("keydown", function (e) {
-	if (e.key === "Enter" && !e.shiftKey) {
+	if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
 		e.preventDefault();
 		sendMessage();
 	}
@@ -46,34 +59,27 @@ async function sendMessage() {
 	// Don't send empty messages
 	if (message === "" || isProcessing) return;
 
-	// Disable input while processing
+	// The textarea is NOT disabled while processing: disabling it closes the
+	// mobile keyboard and makes the whole screen flicker.
 	isProcessing = true;
-	userInput.disabled = true;
-	sendButton.disabled = true;
 
 	// Add user message to chat
 	addMessageToChat("user", message);
 
 	// Clear input
 	userInput.value = "";
-	userInput.style.height = "auto";
+	resizeInput();
+	updateSendState();
 
-	// Show typing indicator
+	// Show typing indicator (space is reserved, so nothing jumps)
 	typingIndicator.classList.add("visible");
 
 	// Add message to history
 	chatHistory.push({ role: "user", content: message });
 
 	try {
-		// Create new assistant response element
-		const assistantMessageEl = document.createElement("div");
-		assistantMessageEl.className = "message assistant-message";
-		assistantMessageEl.innerHTML = "<p></p>";
-		chatMessages.appendChild(assistantMessageEl);
-		const assistantTextEl = assistantMessageEl.querySelector("p");
-
-		// Scroll to bottom
-		chatMessages.scrollTop = chatMessages.scrollHeight;
+		// Assistant bubble is created on the first token, not before
+		let assistantTextEl = null;
 
 		// Send request to API
 		const response = await fetch("/api/chat", {
@@ -99,55 +105,11 @@ async function sendMessage() {
 		const decoder = new TextDecoder();
 		let responseText = "";
 		let buffer = "";
-		const flushAssistantText = () => {
-			assistantTextEl.textContent = responseText;
-			chatMessages.scrollTop = chatMessages.scrollHeight;
-		};
 
-		let sawDone = false;
-		while (true) {
-			const { done, value } = await reader.read();
-
-			if (done) {
-				// Process any remaining complete events in buffer
-				const parsed = consumeSseEvents(buffer + "\n\n");
-				for (const data of parsed.events) {
-					if (data === "[DONE]") {
-						break;
-					}
-					try {
-						const jsonData = JSON.parse(data);
-						// Handle both Workers AI format (response) and OpenAI format (choices[0].delta.content)
-						let content = "";
-						if (
-							typeof jsonData.response === "string" &&
-							jsonData.response.length > 0
-						) {
-							content = jsonData.response;
-						} else if (jsonData.choices?.[0]?.delta?.content) {
-							content = jsonData.choices[0].delta.content;
-						}
-						if (content) {
-							responseText += content;
-							flushAssistantText();
-						}
-					} catch (e) {
-						console.error("Error parsing SSE data as JSON:", e, data);
-					}
-				}
-				break;
-			}
-
-			// Decode chunk
-			buffer += decoder.decode(value, { stream: true });
-			const parsed = consumeSseEvents(buffer);
-			buffer = parsed.buffer;
-			for (const data of parsed.events) {
-				if (data === "[DONE]") {
-					sawDone = true;
-					buffer = "";
-					break;
-				}
+		// Returns true when the stream is finished ([DONE])
+		const handleEvents = (events) => {
+			for (const data of events) {
+				if (data === "[DONE]") return true;
 				try {
 					const jsonData = JSON.parse(data);
 					// Handle both Workers AI format (response) and OpenAI format (choices[0].delta.content)
@@ -161,51 +123,73 @@ async function sendMessage() {
 						content = jsonData.choices[0].delta.content;
 					}
 					if (content) {
+						if (!assistantTextEl) {
+							assistantTextEl = addMessageToChat("assistant", "");
+						}
 						responseText += content;
-						flushAssistantText();
+						assistantTextEl.textContent = responseText;
+						scrollToBottom();
 					}
 				} catch (e) {
 					console.error("Error parsing SSE data as JSON:", e, data);
 				}
 			}
-			if (sawDone) {
+			return false;
+		};
+
+		while (true) {
+			const { done, value } = await reader.read();
+
+			if (done) {
+				// Process any remaining complete events in buffer
+				handleEvents(consumeSseEvents(buffer + "\n\n").events);
 				break;
 			}
+
+			// Decode chunk
+			buffer += decoder.decode(value, { stream: true });
+			const parsed = consumeSseEvents(buffer);
+			buffer = parsed.buffer;
+			if (handleEvents(parsed.events)) break;
 		}
 
 		// Add completed response to chat history
 		if (responseText.length > 0) {
 			chatHistory.push({ role: "assistant", content: responseText });
+		} else {
+			addMessageToChat("assistant", "No response received. Please try again.", true);
 		}
 	} catch (error) {
 		console.error("Error:", error);
 		addMessageToChat(
 			"assistant",
 			"Sorry, there was an error processing your request.",
+			true,
 		);
 	} finally {
 		// Hide typing indicator
 		typingIndicator.classList.remove("visible");
 
-		// Re-enable input
+		// Allow sending again (no focus() call: it would re-open the mobile keyboard)
 		isProcessing = false;
-		userInput.disabled = false;
-		sendButton.disabled = false;
-		userInput.focus();
+		updateSendState();
 	}
 }
 
 /**
- * Helper function to add message to chat
+ * Helper function to add message to chat. Returns the <p> element.
+ * Uses textContent, so message text is never parsed as HTML.
  */
-function addMessageToChat(role, content) {
+function addMessageToChat(role, content, isError = false) {
 	const messageEl = document.createElement("div");
-	messageEl.className = `message ${role}-message`;
-	messageEl.innerHTML = `<p>${content}</p>`;
+	messageEl.className = `message ${role}-message${isError ? " error" : ""}`;
+	const textEl = document.createElement("p");
+	textEl.textContent = content;
+	messageEl.appendChild(textEl);
 	chatMessages.appendChild(messageEl);
 
-	// Scroll to bottom
-	chatMessages.scrollTop = chatMessages.scrollHeight;
+	scrollToBottom();
+	return textEl;
 }
 
 function consumeSseEvents(buffer) {
