@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>FlyTripVisa - AI Powered Visa, Flights, Hotels Application And Bookings Service Providers In GCC & Asia.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --primary: #e11d2c; --primary-dark: #b81222; --primary-light: #ff4d5a;
+    --gold: #f5b042; --gold-light: #fff0d4; --bg: #000000; --white: #ffffff;
+    --card-bg: #141414; --text: #f0f0f0; --text-muted: #8a9ab8; --border: #2a2a2a;
+    --green: #07c160; --shadow-sm: 0 2px 8px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3); --shadow-md: 0 8px 24px rgba(0,0,0,.5);
+  }
+  html { background: #000; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #000; color: var(--text); min-height: 100vh; max-width: 500px; margin: 0 auto; position: relative; padding-bottom: 60px; }
+  .notice-bar { background: #1a1200; border-bottom: 1px solid #3a2a00; padding: 8px 16px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: #f5b042; overflow: hidden; white-space: nowrap; }
+  .notice-icon { flex-shrink: 0; font-weight: 700; font-size: 14px; }
+  .notice-scroll { flex: 1; overflow: hidden; position: relative; }
+  .notice-text { display: inline-block; animation: scrollText 26s linear infinite; padding-left: 8px; font-weight: 500; }
+  .notice-text span { margin-right: 36px; }
+  @keyframes scrollText { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+  .hero { background: linear-gradient(125deg,#b81222 0%,var(--primary) 45%,#ff4a5a 100%); padding: 28px 20px 32px; position: relative; text-align: center; }
+  .hero-badge { background: rgba(255,255,255,.18); backdrop-filter: blur(2px); display: inline-block; border-radius: 30px; padding: 4px 14px; font-size: 11px; font-weight: 600; color: #fff; letter-spacing: .5px; margin-bottom: 14px; border: .5px solid rgba(255,255,255,.4); }
+  .hero-title { font-size: 34px; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 8px; letter-spacing: -.3px; }
+  .hero-title span { color: var(--gold); }
+  .hero-subtitle { font-size: 14px; color: rgba(255,255,255,.92); margin-bottom: 22px; line-height: 1.45; }
+  .hero-stats { display: flex; justify-content: center; background: rgba(0,0,0,.12); backdrop-filter: blur(4px); border-radius: 48px; padding: 12px 8px; width: 90%; margin: 0 auto; }
+  .stat-item { flex: 1; text-align: center; position: relative; }
+  .stat-item + .stat-item::before { content: ''; position: absolute; left: 0; top: 10%; height: 80%; width: 1px; background: rgba(255,255,255,.3); }
+  .stat-num { font-size: 24px; font-weight: 900; color: var(--gold-light); line-height: 1.2; }
+  .stat-label { font-size: 10px; color: rgba(255,255,255,.9); margin-top: 4px; }
+  .card-section { background: var(--card-bg); margin: 14px 14px 0; border-radius: 24px; box-shadow: var(--shadow-sm); overflow: hidden; }
+  .section-header { padding: 16px 18px 8px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
+  .section-header .header-icon { font-size: 20px; }
+  .section-header h2 { font-size: 17px; font-weight: 700; color: #f0f0f0; }
+  .section-header .badge-count { margin-left: auto; background: #222; color: var(--primary); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 40px; }
+  .group-list { padding: 4px 0 8px; }
+  .group-item { display: flex; align-items: center; padding: 12px 16px; gap: 12px; cursor: pointer; border-bottom: 1px solid #1e1e1e; }
+  .group-item:active { background: #1a0a0a; }
+  .group-icon { width: 48px; height: 48px; background: linear-gradient(145deg,#2a1010,#3a1a1a); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+  .group-icon.blue { background: linear-gradient(145deg,#0d1a2e,#0f2040); }
+  .group-icon.green { background: linear-gradient(145deg,#0a2018,#0c2a1e); }
+  .group-icon.orange { background: linear-gradient(145deg,#2a1800,#3a2000); }
+  .group-icon.purple { background: linear-gradient(145deg,#1e1030,#281440); }
+  .group-icon.teal { background: linear-gradient(145deg,#0a2020,#0c2828); }
+  .group-info { flex: 1; }
+  .group-name { font-size: 15px; font-weight: 700; color: #f0f0f0; margin-bottom: 4px; }
+  .group-desc { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .group-meta { text-align: right; flex-shrink: 0; }
+  .group-count { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
+  .join-btn { background: linear-gradient(90deg,var(--primary),#ff4050); border: none; padding: 5px 14px; border-radius: 30px; color: #fff; font-size: 11px; font-weight: 700; cursor: pointer; }
+  .join-btn:active { opacity: .8; transform: scale(.96); }
+  .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 18px; }
+  .feature-card { background: #1a1a1a; border-radius: 20px; padding: 14px 10px; text-align: center; border: 1px solid #2a1515; }
+  .f-icon { font-size: 32px; margin-bottom: 8px; display: block; }
+  .f-title { font-weight: 800; font-size: 14px; margin-bottom: 5px; color: #f0f0f0; }
+  .f-desc { font-size: 11px; color: #8a9ab8; line-height: 1.4; }
+  .steps-container { padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 16px; }
+  .step { display: flex; gap: 14px; align-items: flex-start; }
+  .step-num { width: 32px; height: 32px; background: linear-gradient(135deg,var(--primary),var(--primary-light)); border-radius: 40px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; font-size: 14px; flex-shrink: 0; }
+  .step-text .step-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; color: #f0f0f0; }
+  .step-text .step-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+  .testimonial-list { padding: 14px 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+  .testimonial-card { background: #1a1a1a; border-radius: 18px; padding: 14px; border-left: 4px solid var(--primary); }
+  .t-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .t-avatar { width: 36px; height: 36px; background: linear-gradient(145deg,var(--primary),var(--primary-light)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 13px; }
+  .t-name { font-weight: 700; font-size: 13px; }
+  .t-role { font-size: 10px; color: #7e8aa2; }
+  .t-stars { color: #f5b042; font-size: 12px; margin-left: auto; letter-spacing: 2px; }
+  .t-content { font-size: 12px; line-height: 1.5; color: #c8d0dc; }
+  .cta-banner { margin: 18px 14px; background: linear-gradient(115deg,var(--primary-dark),var(--primary)); border-radius: 28px; padding: 26px 20px; text-align: center; box-shadow: var(--shadow-md); }
+  .cta-banner h3 { color: #fff; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .cta-banner p { color: rgba(255,255,255,.85); font-size: 13px; margin-bottom: 20px; }
+  .cta-main-btn { background: #fff; border: none; border-radius: 60px; padding: 12px 32px; font-weight: 800; font-size: 16px; color: var(--primary); display: inline-flex; align-items: center; gap: 10px; cursor: pointer; box-shadow: 0 6px 14px rgba(0,0,0,.2); }
+  .cta-main-btn:active { transform: scale(.96); }
+  .bottom-tab { position: fixed; bottom: 0; left: 0; right: 0; max-width: 500px; margin: 0 auto; background: rgba(10,10,10,.98); backdrop-filter: blur(12px); border-top: 1px solid #222; display: flex; padding: 4px 6px 6px; justify-content: space-around; z-index: 120; box-shadow: 0 -2px 10px rgba(0,0,0,.6); }
+  .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; padding: 2px 0; border-radius: 12px; }
+  .tab-icon svg { width: 20px; height: 20px; stroke: #666; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: stroke .1s; }
+  .tab-label { font-size: 8.5px; font-weight: 500; color: #666; }
+  .tab-item.active .tab-label { color: var(--primary); font-weight: 700; }
+  .tab-item.active .tab-icon svg { stroke: var(--primary); fill: rgba(225,29,44,.1); }
+  .modal-mask { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(4px); z-index: 200; align-items: flex-end; justify-content: center; }
+  .modal-mask.open { display: flex; }
+  .modal-container { background: #141414; width: 100%; max-width: 500px; border-radius: 32px 32px 0 0; padding: 24px 24px 36px; animation: slideUp .28s ease; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-close-row { display: flex; justify-content: flex-end; }
+  .modal-close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #9aa6b9; padding: 4px; }
+  .modal-title { font-size: 20px; font-weight: 800; text-align: center; margin: 6px 0; color: #f0f0f0; }
+  .modal-sub { text-align: center; font-size: 13px; color: #7a8a9e; margin-bottom: 20px; }
+  .auth-toggle-row { display: flex; background: #1e1e1e; border-radius: 30px; padding: 4px; margin-bottom: 20px; }
+  .auth-toggle-btn { flex: 1; background: transparent; border: none; padding: 10px; color: #8a9ab8; font-weight: 700; font-size: 13px; border-radius: 24px; cursor: pointer; }
+  .auth-toggle-btn.active { background: var(--primary); color: #fff; }
+  .qr-placeholder { width: 160px; height: 160px; background: #1e1e1e; border-radius: 24px; margin: 0 auto 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border: 1px dashed #333; }
+  .mock-wechat-btn { background: var(--green); border: none; width: 100%; padding: 14px; border-radius: 60px; font-weight: 800; font-size: 15px; color: #fff; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; margin-top: 8px; }
+  .auth-input { width: 100%; background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 12px 16px; color: #fff; font-size: 14px; margin-bottom: 12px; outline: none; }
+  .auth-input:focus { border-color: var(--primary); }
+  .view-all-link { text-align: center; padding: 12px; color: var(--primary); font-weight: 700; font-size: 13px; border-top: 1px solid #1e1e1e; cursor: pointer; background: #111; }
+  .tab-content-panel { display: block; }
+  .tab-hidden { display: none; }
+  footer { text-align: center; font-size: 10px; color: #444; padding: 24px 16px 20px; }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .social-grid a { padding: 10px; text-align: center; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; color: #fff; }
+  .google { background: #ea4335; } .facebook { background: #1877f2; } .instagram { background: #e1306c; } .wechat { background: #07c160; } .whatsapp { background: #25d366; grid-column: span 2; }
+  .form-error { color: #ef4444; font-size: 12px; margin-bottom: 10px; display: none; }
+  .form-error.show { display: block; }
+</style>
+</head>
+<body>
+
+<div class="notice-bar">
+  <div class="notice-icon">🔥</div>
+  <div class="notice-scroll"><div class="notice-text">
+    <span>🎉 Dubai & GCC Visa Applications +120 approved today &nbsp;&nbsp;✨ Worldwide Flight & Hotel Bookings active &nbsp;&nbsp;📦 Business Setup in UAE & Asia &nbsp;&nbsp;🌍 FlyTripVisa 24/7 AI Support Ready</span>
+    <span>🎉 Dubai & GCC Visa Applications +120 approved today &nbsp;&nbsp;✨ Worldwide Flight & Hotel Bookings active &nbsp;&nbsp;📦 Business Setup in UAE & Asia &nbsp;&nbsp;🌍 FlyTripVisa 24/7 AI Support Ready</span>
+  </div></div>
+</div>
+
+<div id="app">
+  <div id="homePanel" class="tab-content-panel">
+    <div class="hero">
+      <div class="hero-badge">🚀 Fly AI Ready To Assist You 24/7 - Just One Click To Chat 💬</div>
+      <div class="hero-title">FlyTripVisa<span> AI Assistant</span></div>
+      <div class="hero-subtitle">Visa Applications • Business Setup <br>Flights • Hotels Booking</div>
+      <div class="hero-stats">
+        <div class="stat-item"><div class="stat-num">40+</div><div class="stat-label">Visa Destinations</div></div>
+        <div class="stat-item"><div class="stat-num">22+</div><div class="stat-label">Global Hubs</div></div>
+        <div class="stat-item"><div class="stat-num">6800+</div><div class="stat-label">Happy Travelers</div></div>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="section-header"><span class="header-icon">⚡</span><h2>Core Services</h2><div class="badge-count">High Efficiency</div></div>
+      <div class="features-grid">
+        <div class="feature-card" onclick="location.href='/visa'"><span class="f-icon">🛂</span><div class="f-title">Visa Consultancy</div><div class="f-desc">Fast-track tourist & business visas</div></div>
+        <div class="feature-card" onclick="location.href='/flights&hotel'"><span class="f-icon">✈️</span><div class="f-title">Flight Bookings</div><div class="f-desc">Global airlines, best price guarantee</div></div>
+        <div class="feature-card" onclick="location.href='/flights&hotel'"><span class="f-icon">🏨</span><div class="f-title">Hotel Stays</div><div class="f-desc">Luxury & budget accommodations</div></div>
+        <div class="feature-card" onclick="location.href='/bussiness'"><span class="f-icon">🏢</span><div class="f-title">Business Setup</div><div class="f-desc">GCC & Asian corporate establishment</div></div>
+      </div>
+    </div>
+
+    <div class="card-section" id="industryPreview">
+      <div class="section-header"><span class="header-icon">🛂</span><h2>Popular Visa Services</h2><div class="badge-count">40 Destinations</div></div>
+      <div class="group-list" id="industryList"></div>
+      <div class="view-all-link" data-type="industry">View all 40 Visa Consultancy Services →</div>
+    </div>
+
+    <div class="card-section" id="regionPreview">
+      <div class="section-header"><span class="header-icon">📍</span><h2>Popular Travel Hubs</h2><div class="badge-count">22 Hubs</div></div>
+      <div class="group-list" id="regionList"></div>
+      <div class="view-all-link" data-type="region">View all 22 Regional Travel Hubs →</div>
+    </div>
+
+    <div class="card-section">
+      <div class="section-header"><span class="header-icon">📋</span><h2>How It Works</h2></div>
+      <div class="steps-container">
+        <div class="step"><div class="step-num">1</div><div class="step-text"><div class="step-title">Choose Service & Destination</div><div class="step-desc">Select your required visa, flight, hotel, or business setup</div></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text"><div class="step-title">Tap "Apply / Book"</div><div class="step-desc">One tap opens direct communication with our visa consultants</div></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text"><div class="step-title">Submit Documents</div><div class="step-desc">Upload your passport and basic details securely</div></div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-text"><div class="step-title">Get Confirmed Instantly</div><div class="step-desc">Receive your visa approval, tickets, and booking vouchers fast</div></div></div>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <div class="section-header"><span class="header-icon">💬</span><h2>Client Feedback</h2><div class="badge-count">98% Positive</div></div>
+      <div class="testimonial-list">
+        <div class="testimonial-card"><div class="t-header"><div class="t-avatar">AI</div><div><div class="t-name">Ashiful Islam</div><div class="t-role">Frequent Traveler & Trader</div></div><div class="t-stars">★★★★★</div></div><div class="t-content">Got my Dubai work visa and flight booked through FlyTripVisa in record time. Absolute seamless service!</div></div>
+        <div class="testimonial-card"><div class="t-header"><div class="t-avatar" style="background:linear-gradient(145deg,#1e6ef0,#4f9fff)">MR</div><div><div class="t-name">Mohon Kumar</div><div class="t-role">Business Setup Client</div></div><div class="t-stars">★★★★★</div></div><div class="t-content">The team handled my official documentation and business setup smoothly. Highly professional!</div></div>
+        <div class="testimonial-card"><div class="t-header"><div class="t-avatar" style="background:linear-gradient(145deg,#07c160,#12b981)">LG</div><div><div class="t-name">Li Guolong</div><div class="t-role">International Partner</div></div><div class="t-stars">★★★★☆</div></div><div class="t-content">Fast hotel and flight ticketing support for my China-GCC trips. Extremely reliable AI and human support.</div></div>
+      </div>
+    </div>
+
+    <div class="cta-banner">
+      <h3>🚀 Start Your Travel & Visa Journey</h3>
+      <p>Connect with our expert consultants 24/7 for instant assistance</p>
+      <button class="cta-main-btn" id="globalJoinBtn"><span>💬</span> Connect with Consultant</button>
+    </div>
+
+    <footer>FlyTripVisa.site · Professional Travel & Visa Consultancy Platform<br>© 2026 FlyTripVisa.site</footer>
+  </div>
+
+  <div id="industryPanel" class="tab-content-panel tab-hidden">
+    <div style="padding:16px 14px 10px;"><h3 style="font-size:20px;font-weight:800;color:#f0f0f0;">🛂 All Visa & Business Services</h3><p style="font-size:12px;color:#8a9ab8;">40 specialized travel and consultancy sectors</p></div>
+    <div class="card-section" style="margin-top:0;"><div class="group-list" id="fullIndustryList"></div></div>
+  </div>
+
+  <div id="regionPanel" class="tab-content-panel tab-hidden">
+    <div style="padding:16px 14px 10px;"><h3 style="font-size:20px;font-weight:800;color:#f0f0f0;">📍 All Regional Travel Hubs</h3><p style="font-size:12px;color:#8a9ab8;">Covering GCC, Asia & major global destinations</p></div>
+    <div class="card-section" style="margin-top:0;"><div class="group-list" id="fullRegionList"></div></div>
+  </div>
+
+  <div id="authPanel" class="tab-content-panel tab-hidden">
+    <div style="padding:32px 24px;text-align:center;">
+      <div style="font-size:52px;">🔐</div>
+      <div style="font-weight:800;font-size:18px;margin-top:12px;color:#f0f0f0;">Account Center</div>
+      <div style="font-size:13px;color:#8a9ab8;margin:8px 0 24px;">Manage your visa applications and bookings securely</div>
+      <div style="display:flex;gap:10px;">
+        <button class="cta-main-btn" id="panelLoginBtn" style="background:var(--primary);color:#fff;flex:1;justify-content:center;">Login</button>
+        <button class="cta-main-btn" id="panelSignupBtn" style="background:#1e1e1e;color:#fff;border:1px solid #333;flex:1;justify-content:center;">Sign Up</button>
+      </div>
+      <div class="social-grid" style="margin-top:20px;">
+        <a href="#" class="google">Google</a><a href="#" class="facebook">Facebook</a>
+        <a href="#" class="instagram">Instagram</a><a href="#" class="wechat">WeChat</a>
+        <a href="#" class="whatsapp">WhatsApp Connect</a>
+      </div>
+      <div style="margin-top:40px;font-size:12px;color:#555;">Processed Visas & Bookings: 12,500+<br>Verified Global Partners: 1,200+</div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-tab">
+  <div class="tab-item active" data-tab="home"><div class="tab-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div><div class="tab-label">Home</div></div>
+  <div class="tab-item" data-tab="industry"><div class="tab-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div><div class="tab-label">Visas</div></div>
+  <div class="tab-item" data-tab="region"><div class="tab-icon"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div><div class="tab-label">Hubs</div></div>
+  <div class="tab-item" data-tab="auth"><div class="tab-icon"><svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg></div><div class="tab-label">Login/Signup</div></div>
+</div>
+
+<div id="joinModal" class="modal-mask">
+  <div class="modal-container">
+    <div class="modal-close-row"><button class="modal-close-btn" id="closeModalBtn">✕</button></div>
+    <div class="modal-title" id="modalGroupName">FlyTripVisa Support</div>
+    <div class="modal-sub" id="modalSubText">Connect with our 24/7 AI & Human Consultant</div>
+    <div id="modalDynamicContent"></div>
+  </div>
+</div>
+
+<script>
+  const industryGroups = [
+    { name:"Dubai & UAE Tourist Visa", desc:"Express Tourist Visa / 30 & 60 Days", count:"1,420 processed", icon:"🇦🇪" },
+    { name:"GCC Business & Work Visa", desc:"Work Permits & Company Establishment", count:"980 processed", icon:"🏢", iconType:"blue" },
+    { name:"Worldwide Flight Ticketing", desc:"Global Airlines • Economy & Business", count:"3,210 booked", icon:"✈️", iconType:"orange" },
+    { name:"Luxury & Budget Hotels", desc:"Global Accommodation Bookings", count:"2,450 booked", icon:"🏨", iconType:"purple" },
+    { name:"China Business & Trade Visa", desc:"M-Visa & Exhibition Invitations", count:"1,120 processed", icon:"🇨🇳", iconType:"teal" },
+    { name:"Malaysia & Singapore Visa", desc:"Fast Approval Tourism & Study Visas", count:"890 processed", icon:"🇲🇾", iconType:"green" },
+    { name:"Kingdom of Saudi Arabia Visa", desc:"Umrah, Tourist & Business Visas", count:"1,050 processed", icon:"🇸🇦" },
+    { name:"VIP Airport Assistance", desc:"Meet & Greet, Fast Track Services", count:"780 clients", icon:"🌟", iconType:"blue" }
+  ];
+  const regionGroups = [
+    { name:"Dubai & UAE Hub", desc:"Dubai · UAE Services", count:"4,250 clients", icon:"🏙️" },
+    { name:"China Export & Trade Hub", desc:"Guangzhou · Shenzhen · Yiwu", count:"3,880 clients", icon:"🌏", iconType:"blue" },
+    { name:"Southeast Asia Hub", desc:"Kuala Lumpur · Bangkok · Phnom Penh", count:"2,670 clients", icon:"🌴", iconType:"orange" },
+    { name:"South Asia Hub", desc:"Dhaka · Kolkata · New Delhi · Colombo", count:"3,120 clients", icon:"🛬", iconType:"green" },
+    { name:"Europe & Schengen Hub", desc:"Germany · France · Italy · UK", count:"1,980 clients", icon:"🇪🇺", iconType:"purple" },
+    { name:"Global Express Desk", desc:"24/7 Worldwide Emergency Ticketing", count:"2,760 clients", icon:"⚡", iconType:"teal" }
+  ];
+
+  function renderGroupList(containerId, groups, limit = 6) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = groups.slice(0, limit).map(g => `<div class="group-item" data-name="${g.name}">
+      <div class="group-icon ${g.iconType || ''}">${g.icon}</div>
+      <div class="group-info"><div class="group-name">${g.name}</div><div class="group-desc">${g.desc}</div></div>
+      <div class="group-meta"><div class="group-count">${g.count}</div><button class="join-btn">Apply</button></div></div>`).join('');
+    attachGroupEvents(container);
+  }
+  function renderFullList(containerId, groups) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = groups.map(g => `<div class="group-item" data-name="${g.name}">
+      <div class="group-icon ${g.iconType || ''}">${g.icon}</div>
+      <div class="group-info"><div class="group-name">${g.name}</div><div class="group-desc">${g.desc}</div></div>
+      <div class="group-meta"><div class="group-count">${g.count}</div><button class="join-btn">Apply</button></div></div>`).join('');
+    attachGroupEvents(container);
+  }
+  function attachGroupEvents(container) {
+    container.querySelectorAll('.group-item').forEach(item => {
+      const name = item.getAttribute('data-name');
+      const btn = item.querySelector('.join-btn');
+      if (btn) btn.addEventListener('click', (e) => { e.stopPropagation(); openConsultModal(name); });
+      item.addEventListener('click', () => openConsultModal(name));
+    });
+  }
+
+  const modal = document.getElementById('joinModal');
+  const modalTitle = document.getElementById('modalGroupName');
+  const modalSubText = document.getElementById('modalSubText');
+  const modalDynamicContent = document.getElementById('modalDynamicContent');
+
+  function openConsultModal(name) {
+    modalTitle.innerText = `Apply / Book: ${name}`;
+    modalSubText.innerText = "Scan QR code or connect with our 24/7 AI & Human Consultant";
+    modalDynamicContent.innerHTML = `
+      <div class="qr-placeholder"><span style="font-size:52px;">📱</span><span style="font-size:11px;">Consultant QR / Telegram Bot</span></div>
+      <button class="mock-wechat-btn" onclick="alert('📲 Contact via Telegram @aialionBot or WhatsApp!')"><span>💬</span> Connect on Telegram / WhatsApp</button>`;
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function openAuthModal(mode = 'login') {
+    modalTitle.innerText = "FlyTripVisa Portal";
+    modalSubText.innerText = "Access your profile, visa status and bookings";
+    const isLogin = mode === 'login';
+    modalDynamicContent.innerHTML = `
+      <div class="auth-toggle-row">
+        <button class="auth-toggle-btn ${isLogin ? 'active' : ''}" id="modalTabLogin">Login</button>
+        <button class="auth-toggle-btn ${!isLogin ? 'active' : ''}" id="modalTabSignup">Sign Up</button>
+      </div>
+      <div id="authFormArea">
+        <div class="form-error" id="authError"></div>
+        ${!isLogin ? '<input type="text" class="auth-input" placeholder="Full Name" id="authName">' : ''}
+        <input type="email" class="auth-input" placeholder="Email Address" id="authEmail">
+        <input type="password" class="auth-input" placeholder="Password (min 8 chars)" id="authPass">
+        <button class="mock-wechat-btn" id="authSubmitBtn" style="background:var(--primary);"><span>🚀</span> ${isLogin ? 'Login to Account' : 'Create Account'}</button>
+      </div>
+      <div class="social-grid">
+        <a href="#" class="google">Google</a><a href="#" class="facebook">Facebook</a>
+        <a href="#" class="instagram">Instagram</a><a href="#" class="wechat">WeChat</a>
+        <a href="#" class="whatsapp">WhatsApp</a>
+      </div>`;
+    document.getElementById('modalTabLogin').addEventListener('click', () => openAuthModal('login'));
+    document.getElementById('modalTabSignup').addEventListener('click', () => openAuthModal('signup'));
+    document.getElementById('authSubmitBtn').addEventListener('click', () => submitAuth(isLogin));
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  async function submitAuth(isLogin) {
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPass').value;
+    const nameInput = document.getElementById('authName');
+    const name = nameInput ? nameInput.value.trim() : '';
+    const errorEl = document.getElementById('authError');
+
+    if (!email || !password || (!isLogin && !name)) { showError(errorEl, 'Please fill in all fields.'); return; }
+    if (password.length < 8) { showError(errorEl, 'Password must be at least 8 characters.'); return; }
+
+    try {
+      const res = await fetch(`/api/${isLogin ? 'login' : 'signup'}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(isLogin ? { email, password } : { name, email, password }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(`✅ ${isLogin ? 'Login' : 'Registration'} successful! Welcome to FlyTripVisa.`);
+        closeModal();
+        checkSession();
+      } else {
+        showError(errorEl, data.error || 'Authentication failed.');
+      }
+    } catch (err) {
+      showError(errorEl, 'Network error. Please try again.');
+    }
+  }
+
+  function showError(el, msg) { el.textContent = msg; el.classList.add('show'); }
+
+  function closeModal() {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+  document.getElementById('globalJoinBtn').addEventListener('click', () => openConsultModal('FlyTripVisa General Consultancy'));
+  document.getElementById('panelLoginBtn').addEventListener('click', () => openAuthModal('login'));
+  document.getElementById('panelSignupBtn').addEventListener('click', () => openAuthModal('signup'));
+
+  const panels = { home:'homePanel', industry:'industryPanel', region:'regionPanel', auth:'authPanel' };
+  function switchToTab(tabId) {
+    Object.keys(panels).forEach(key => document.getElementById(panels[key])?.classList.add('tab-hidden'));
+    document.getElementById(panels[tabId])?.classList.remove('tab-hidden');
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.tab-item[data-tab="${tabId}"]`)?.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  document.querySelectorAll('.tab-item').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabId = tab.getAttribute('data-tab');
+      if (tabId === 'auth') openAuthModal('login');
+      else switchToTab(tabId);
+    });
+  });
+  document.querySelectorAll('.view-all-link').forEach(link => {
+    link.addEventListener('click', () => switchToTab(link.getAttribute('data-type')));
+  });
+
+  async function checkSession() {
+    try {
+      const r = await fetch('/api/me', { credentials: 'same-origin' });
+      if (r.ok) { const d = await r.json(); if (d.user) updateUIForUser(d.user); }
+    } catch (e) {}
+  }
+  function updateUIForUser(user) {
+    const btn = document.querySelector('.tab-item[data-tab="auth"] .tab-label');
+    if (btn) btn.textContent = user.name.split(' ')[0];
+  }
+
+  renderGroupList('industryList', industryGroups, 6);
+  renderGroupList('regionList', regionGroups, 5);
+  renderFullList('fullIndustryList', industryGroups);
+  renderFullList('fullRegionList', regionGroups);
+  checkSession();
+</script>
+</body>
+</html>

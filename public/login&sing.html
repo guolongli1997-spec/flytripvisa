@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Login / Sign Up - FlyTripVisa</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif; background:#000; color:#f0f0f0; max-width:500px; margin:0 auto; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .card { background:#141414; border:1px solid #2a2a2a; border-radius:20px; padding:32px 24px; width:100%; text-align:center; }
+  .logo { font-size:26px; font-weight:900; margin-bottom:6px; }
+  .logo span { color:#e11d2c; }
+  .sub { font-size:13px; color:#8a9ab8; margin-bottom:24px; }
+  .btn { width:100%; padding:14px; border:none; border-radius:11px; font-weight:700; font-size:15px; cursor:pointer; margin-bottom:12px; }
+  .btn-primary { background:#e11d2c; color:#fff; }
+  .btn-secondary { background:#1e1e1e; color:#f0f0f0; border:1px solid #333; }
+  .social-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
+  .social-grid a { padding:11px; text-align:center; border-radius:8px; text-decoration:none; font-size:13px; font-weight:600; color:#fff; }
+  .google { background:#ea4335; } .facebook { background:#1877f2; } .instagram { background:#e1306c; } .wechat { background:#07c160; } .whatsapp { background:#25d366; grid-column:span 2; }
+  .hint { font-size:12px; color:#555; margin-top:16px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">fly<span>trip</span>visa</div>
+    <div class="sub">Sign in to manage your visa & bookings</div>
+    <button class="btn btn-primary" onclick="openAuth('login')">🔐 Login</button>
+    <button class="btn btn-secondary" onclick="openAuth('signup')">📝 Create Account</button>
+    <div class="social-grid">
+      <a href="#" class="google">Google</a>
+      <a href="#" class="facebook">Facebook</a>
+      <a href="#" class="instagram">Instagram</a>
+      <a href="#" class="wechat">WeChat</a>
+      <a href="#" class="whatsapp">WhatsApp Connect</a>
+    </div>
+    <div class="hint">Admin: admin / pass1122</div>
+  </div>
+
+  <!-- Auth Modal (same as homepage) -->
+  <div id="authModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:blur(4px); z-index:200; align-items:flex-end; justify-content:center;">
+    <div style="background:#141414; width:100%; max-width:500px; border-radius:32px 32px 0 0; padding:24px; position:relative;">
+      <button onclick="closeModal()" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:24px; color:#9aa6b9; cursor:pointer;">✕</button>
+      <div style="font-size:20px; font-weight:800; text-align:center; margin:12px 0; color:#f0f0f0;" id="modalTitle">Login</div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    function openAuth(mode) {
+      const isLogin = mode === 'login';
+      document.getElementById('modalTitle').textContent = isLogin ? 'Login' : 'Create Account';
+      document.getElementById('modalBody').innerHTML = `
+        <div id="formError" style="color:#ef4444; font-size:12px; margin-bottom:10px; display:none;"></div>
+        ${!isLogin ? '<input type="text" id="authName" placeholder="Full Name" style="width:100%; padding:12px; background:#1e1e1e; border:1px solid #333; border-radius:10px; color:#fff; margin-bottom:12px; outline:none;">' : ''}
+        <input type="email" id="authEmail" placeholder="Email Address" style="width:100%; padding:12px; background:#1e1e1e; border:1px solid #333; border-radius:10px; color:#fff; margin-bottom:12px; outline:none;">
+        <input type="password" id="authPass" placeholder="Password (min 8 chars)" style="width:100%; padding:12px; background:#1e1e1e; border:1px solid #333; border-radius:10px; color:#fff; margin-bottom:16px; outline:none;">
+        <button onclick="submitAuth(${isLogin})" style="width:100%; padding:13px; background:#e11d2c; color:#fff; border:none; border-radius:10px; font-weight:700; font-size:15px; cursor:pointer;">${isLogin ? 'Login' : 'Create Account'}</button>`;
+      document.getElementById('authModal').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal() {
+      document.getElementById('authModal').style.display = 'none';
+      document.body.style.overflow = '';
+    }
+    async function submitAuth(isLogin) {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPass').value;
+      const nameInput = document.getElementById('authName');
+      const name = nameInput ? nameInput.value.trim() : '';
+      const err = document.getElementById('formError');
+      if (!email || !password || (!isLogin && !name)) { err.textContent = 'Please fill in all fields.'; err.style.display = 'block'; return; }
+      if (password.length < 8) { err.textContent = 'Password must be at least 8 characters.'; err.style.display = 'block'; return; }
+      try {
+        const res = await fetch(`/api/${isLogin ? 'login' : 'signup'}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
+          body: JSON.stringify(isLogin ? { email, password } : { name, email, password })
+        });
+        const data = await res.json();
+        if (res.ok) { alert('✅ Success! Welcome to FlyTripVisa.'); closeModal(); }
+        else { err.textContent = data.error || 'Failed.'; err.style.display = 'block'; }
+      } catch (e) { err.textContent = 'Network error.'; err.style.display = 'block'; }
+    }
+  </script>
+</body>
+</html>

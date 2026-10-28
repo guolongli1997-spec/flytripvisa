@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Flights & Hotels - FlyTripVisa</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif; background:#000; color:#f0f0f0; max-width:500px; margin:0 auto; min-height:100vh; padding-bottom:60px; }
+  .hero { background:linear-gradient(125deg,#0a2018,#0c2a1e,#07c160); padding:28px 20px; text-align:center; }
+  .hero h1 { font-size:26px; font-weight:900; color:#fff; }
+  .hero p { font-size:13px; color:rgba(255,255,255,.9); margin-top:8px; }
+  .container { padding:16px; }
+  .tabs { display:flex; gap:8px; margin-bottom:16px; }
+  .tab { flex:1; padding:10px; border-radius:10px; background:#1a1a1a; border:1px solid #333; text-align:center; font-weight:600; font-size:14px; cursor:pointer; color:#8a9ab8; }
+  .tab.active { background:#07c160; color:#04120e; border-color:#07c160; }
+  .search-box { background:#141414; border:1px solid #2a2a2a; border-radius:14px; padding:14px; margin-bottom:16px; }
+  .search-box input { width:100%; padding:10px 12px; background:#1e1e1e; border:1px solid #333; border-radius:8px; color:#fff; font-size:14px; margin-bottom:10px; outline:none; }
+  .search-box input:focus { border-color:#07c160; }
+  .search-box button { width:100%; padding:11px; background:#07c160; color:#04120e; border:none; border-radius:8px; font-weight:700; font-size:15px; cursor:pointer; }
+  .result { background:#141414; border:1px solid #2a2a2a; border-radius:12px; padding:14px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+  .result-info { font-size:14px; }
+  .result-info small { display:block; color:#8a9ab8; font-size:12px; margin-top:3px; }
+  .result-price { font-weight:800; color:#07c160; font-size:16px; }
+  .bottom-tab { position:fixed; bottom:0; left:0; right:0; max-width:500px; margin:0 auto; background:rgba(10,10,10,.98); border-top:1px solid #222; display:flex; justify-content:space-around; padding:6px; z-index:100; }
+  .tab-item { color:#666; font-size:12px; text-decoration:none; text-align:center; }
+  .tab-item.active { color:#e11d2c; font-weight:700; }
+  .loading { text-align:center; color:#8a9ab8; font-size:13px; padding:20px; }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <h1>✈️ Flights & Hotels</h1>
+    <p>Best price guarantee on global flights & stays</p>
+  </div>
+  <div class="container">
+    <div class="tabs">
+      <div class="tab active" id="tab-flight" onclick="switchSearch('flight')">Flights</div>
+      <div class="tab" id="tab-hotel" onclick="switchSearch('hotel')">Hotels</div>
+    </div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Destination (e.g. DXB, Dubai, Singapore)">
+      <button onclick="search()">🔍 Search</button>
+    </div>
+    <div id="results"></div>
+  </div>
+  <div class="bottom-tab">
+    <a class="tab-item" href="/">Home</a>
+    <a class="tab-item" href="/visa">Visa</a>
+    <a class="tab-item" href="/ai">AI Chat</a>
+    <a class="tab-item active" href="/flights&hotel">Travel</a>
+  </div>
+
+  <script>
+    let currentType = 'flight';
+    function switchSearch(type) {
+      currentType = type;
+      document.getElementById('tab-flight').classList.toggle('active', type === 'flight');
+      document.getElementById('tab-hotel').classList.toggle('active', type === 'hotel');
+      document.getElementById('searchInput').placeholder = type === 'flight' ? 'Destination (e.g. DXB, Dubai)' : 'City (e.g. Dubai, Singapore)';
+      document.getElementById('results').innerHTML = '';
+    }
+    async function search() {
+      const dest = document.getElementById('searchInput').value.trim();
+      const resultsEl = document.getElementById('results');
+      resultsEl.innerHTML = '<div class="loading">Searching best options...</div>';
+      try {
+        const url = `/api/search-travel?type=${currentType}` + (dest ? `&destination=${encodeURIComponent(dest)}` : '');
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.length === 0) { resultsEl.innerHTML = '<div class="loading">No results found.</div>'; return; }
+        resultsEl.innerHTML = data.map(r => `
+          <div class="result">
+            <div class="result-info">
+              <strong>${r.type === 'flight' ? '✈️ ' : '🏨 '}${r.provider}</strong>
+              <small>${Object.entries(r.details).map(([k,v]) => `${k}: ${v}`).join(' · ')}</small>
+            </div>
+            <div class="result-price">${r.currency} ${r.price}</div>
+          </div>`).join('');
+      } catch (e) {
+        resultsEl.innerHTML = '<div class="loading">Search unavailable. Try again.</div>';
+      }
+    }
+  </script>
+</body>
+</html>

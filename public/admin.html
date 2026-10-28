@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Admin Dashboard - FlyTripVisa</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif; background:#000; color:#f0f0f0; max-width:500px; margin:0 auto; min-height:100vh; padding:20px; }
+  .header { text-align:center; padding:24px 0; border-bottom:1px solid #2a2a2a; margin-bottom:24px; }
+  .header h1 { font-size:24px; font-weight:900; color:#e11d2c; }
+  .header p { font-size:13px; color:#8a9ab8; margin-top:6px; }
+  .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
+  .stat-card { background:#141414; border:1px solid #2a2a2a; border-radius:16px; padding:20px; text-align:center; }
+  .stat-card .num { font-size:32px; font-weight:900; color:#07c160; }
+  .stat-card .label { font-size:12px; color:#8a9ab8; margin-top:6px; }
+  .section { background:#141414; border:1px solid #2a2a2a; border-radius:16px; padding:18px; margin-bottom:16px; }
+  .section h2 { font-size:16px; margin-bottom:12px; color:#f0f0f0; }
+  .section ul { list-style:none; }
+  .section li { padding:8px 0; border-bottom:1px solid #1e1e1e; font-size:13px; color:#8a9ab8; display:flex; justify-content:space-between; }
+  .section li:last-child { border-bottom:none; }
+  .badge { background:#e11d2c; color:#fff; font-size:11px; padding:2px 8px; border-radius:10px; }
+  .btn-logout { width:100%; padding:13px; background:#1e1e1e; color:#f0f0f0; border:1px solid #333; border-radius:11px; font-weight:600; cursor:pointer; margin-top:12px; }
+  .loading { color:#8a9ab8; font-size:13px; text-align:center; padding:20px; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>🛡️ Admin Dashboard</h1>
+    <p>FlyTripVisa Management Console</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="num" id="stat-users">—</div><div class="label">Total Users</div></div>
+    <div class="stat-card"><div class="num" id="stat-sessions">—</div><div class="label">Active Sessions</div></div>
+    <div class="stat-card"><div class="num" id="stat-bookings">—</div><div class="label">Bookings</div></div>
+    <div class="stat-card"><div class="num" id="stat-visas">—</div><div class="label">Visa Apps</div></div>
+  </div>
+
+  <div class="section">
+    <h2>📊 Quick Actions</h2>
+    <ul>
+      <li><span>View All Users</span><span class="badge">D1</span></li>
+      <li><span>Visa Applications</span><span class="badge">Pending</span></li>
+      <li><span>Flight Bookings</span><span class="badge">Active</span></li>
+      <li><span>AI Chat Logs</span><span class="badge">Live</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>🔗 Integrations</h2>
+    <ul>
+      <li><span>Telegram Bot</span><span class="badge">@aialionBot</span></li>
+      <li><span>WhatsApp API</span><span class="badge">Connected</span></li>
+      <li><span>Workers AI (Kimi K2.6)</span><span class="badge">Active</span></li>
+      <li><span>R2 Storage</span><span class="badge">flytripvisa-cloud</span></li>
+    </ul>
+  </div>
+
+  <button class="btn-logout" onclick="logout()">🚪 Sign Out</button>
+
+  <script>
+    async function loadStats() {
+      try {
+        const r = await fetch('/api/admin/stats', { credentials: 'same-origin' });
+        if (r.ok) {
+          const d = await r.json();
+          document.getElementById('stat-users').textContent = d.totalUsers;
+          document.getElementById('stat-sessions').textContent = d.activeSessions;
+          document.getElementById('stat-bookings').textContent = d.totalBookings;
+          document.getElementById('stat-visas').textContent = d.totalVisaApplications;
+        }
+      } catch (e) {
+        console.error('Failed to load stats:', e);
+      }
+    }
+    async function logout() {
+      await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' });
+      location.href = '/';
+    }
+    // Protect: check session on load
+    (async () => {
+      const me = await fetch('/api/me', { credentials: 'same-origin' });
+      if (!me.ok) { alert('Please login as admin first.'); location.href = '/login&sing'; return; }
+      const data = await me.json();
+      if (!data.user?.is_admin) { alert('Admin access required.'); location.href = '/'; return; }
+      loadStats();
+    })();
+  </script>
+</body>
+</html>

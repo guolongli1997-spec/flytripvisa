@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+		<meta name="theme-color" content="#000000" />
+		<title>Fly AI Chat By Flytripvisa.site</title>
+		<style>
+			:root {
+				--primary-color: #3fbf9f;
+				--primary-ink: #04120e;
+				--bg: #000000;
+				--surface: #111413;
+				--border-color: #262b29;
+				--text-color: #edf2f0;
+				--text-light: #7f8b86;
+				--user-msg-bg: #edf2f0;
+				--user-msg-text: #000000;
+				--assistant-msg-bg: #111413;
+			}
+			* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+			html { height: 100%; background: var(--bg); color-scheme: dark; }
+			body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Noto Sans Bengali", sans-serif; font-size: 16px; line-height: 1.5; color: var(--text-color); background: var(--bg); height: 100vh; height: 100dvh; max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); -webkit-text-size-adjust: 100%; position: relative; }
+			header { flex: none; display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 0 14px; border-bottom: 1px solid var(--border-color); }
+			.header-left { display: flex; align-items: center; gap: 10px; }
+			.mark { width: 26px; height: 26px; border-radius: 7px; background: var(--primary-color); color: var(--primary-ink); display: grid; place-items: center; font-weight: 700; font-size: 14px; }
+			h1 { font-size: 15px; font-weight: 600; }
+			.auth-btn { background-color: var(--surface); color: var(--primary-color); border: 1px solid var(--primary-color); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+			.auth-btn:hover { background-color: var(--primary-color); color: var(--primary-ink); }
+			.chat-container { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+			.chat-messages { flex: 1; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 16px 14px; display: flex; flex-direction: column; gap: 14px; }
+			.message { padding: 9px 14px; max-width: 88%; }
+			.message p { white-space: pre-wrap; margin: 0; overflow-wrap: anywhere; }
+			.user-message { background-color: var(--user-msg-bg); color: var(--user-msg-text); align-self: flex-end; border-radius: 18px 18px 4px 18px; }
+			.assistant-message { background-color: var(--assistant-msg-bg); border: 1px solid var(--border-color); align-self: flex-start; border-radius: 18px 18px 18px 4px; }
+			.assistant-message.error { color: #ff6b6b; border-color: #ff6b6b; }
+			.typing-indicator { flex: none; height: 22px; padding: 0 16px; font-size: 13px; color: var(--text-light); visibility: hidden; }
+			.typing-indicator.visible { visibility: visible; }
+			.message-input { flex: none; display: flex; align-items: flex-end; gap: 8px; padding: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--border-color); }
+			#user-input { flex: 1; padding: 10px 16px; background: var(--surface); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 22px; font-family: inherit; font-size: 16px; line-height: 1.4; resize: none; min-height: 44px; max-height: 140px; outline: none; }
+			#user-input::placeholder { color: var(--text-light); }
+			#user-input:focus { border-color: var(--primary-color); }
+			#send-button { flex: none; width: 44px; height: 44px; display: grid; place-items: center; background-color: var(--primary-color); color: var(--primary-ink); border: none; border-radius: 50%; cursor: pointer; touch-action: manipulation; -webkit-appearance: none; appearance: none; }
+			#send-button svg { width: 20px; height: 20px; }
+			#send-button:disabled { opacity: 0.35; cursor: not-allowed; }
+			#send-button:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
+			.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; padding: 16px; }
+			.modal-overlay.active { opacity: 1; pointer-events: auto; }
+			.modal-card { background: var(--surface); border: 1px solid var(--border-color); width: 100%; max-width: 380px; border-radius: 16px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); position: relative; transform: translateY(15px); transition: transform 0.25s ease; }
+			.modal-overlay.active .modal-card { transform: translateY(0); }
+			.close-btn { position: absolute; top: 16px; right: 16px; background: transparent; border: none; color: var(--text-light); font-size: 20px; cursor: pointer; line-height: 1; }
+			.close-btn:hover { color: var(--text-color); }
+			.auth-tabs { display: flex; gap: 12px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
+			.tab-btn { background: none; border: none; color: var(--text-light); font-size: 15px; font-weight: 600; padding-bottom: 8px; cursor: pointer; position: relative; }
+			.tab-btn.active { color: var(--primary-color); }
+			.tab-btn.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background-color: var(--primary-color); border-radius: 2px; }
+			.form-group { margin-bottom: 16px; }
+			.form-group label { display: block; font-size: 13px; color: var(--text-light); margin-bottom: 6px; }
+			.form-group input { width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 14px; outline: none; }
+			.form-group input:focus { border-color: var(--primary-color); }
+			.submit-btn { width: 100%; padding: 11px; background: var(--primary-color); color: var(--primary-ink); border: none; border-radius: 8px; font-weight: 600; font-size: 15px; cursor: pointer; margin-top: 8px; transition: opacity 0.2s; }
+			.submit-btn:hover { opacity: 0.9; }
+			.auth-form { display: none; }
+			.auth-form.active { display: block; }
+			.form-error { color: #ff6b6b; font-size: 13px; margin-bottom: 12px; display: none; }
+			.form-error.show { display: block; }
+			.social-row { display: flex; gap: 8px; margin-top: 16px; }
+			.social-row a { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: 600; color: #fff; }
+			.social-row .google { background: #ea4335; }
+			.social-row .facebook { background: #1877f2; }
+			.social-row .wechat { background: #07c160; }
+		</style>
+	</head>
+	<body>
+		<header>
+			<div class="header-left">
+				<div class="mark">A</div>
+				<h1>Fly AI Chat</h1>
+			</div>
+			<button class="auth-btn" id="open-auth-btn">Login / Sign Up</button>
+		</header>
+
+		<div class="chat-container">
+			<div id="chat-messages" class="chat-messages">
+				<div class="message assistant-message">
+					<p>Hello! I'm Fly AI powered by flytripvisa.site. I can help with visas, flights, hotels, and business setup across GCC & Asia. How can I assist you today?</p>
+				</div>
+			</div>
+
+			<div class="typing-indicator" id="typing-indicator">Fly AI is thinking...</div>
+
+			<div class="message-input">
+				<textarea id="user-input" placeholder="Type your message here..." rows="1"></textarea>
+				<button id="send-button" aria-label="Send message" disabled>
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
+				</button>
+			</div>
+		</div>
+
+		<!-- Auth Modal -->
+		<div class="modal-overlay" id="auth-modal">
+			<div class="modal-card">
+				<button class="close-btn" id="close-modal-btn">&times;</button>
+				<div class="auth-tabs">
+					<button class="tab-btn active" onclick="switchTab('login')">Login</button>
+					<button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
+				</div>
+
+				<!-- Login Form -->
+				<form id="login-form" class="auth-form active" onsubmit="return handleAuthSubmit(event, 'login')">
+					<div class="form-error" id="login-error"></div>
+					<div class="form-group">
+						<label for="login-email">Email Address</label>
+						<input type="email" id="login-email" placeholder="you@example.com" required />
+					</div>
+					<div class="form-group">
+						<label for="login-password">Password</label>
+						<input type="password" id="login-password" placeholder="••••••••" required />
+					</div>
+					<button type="submit" class="submit-btn">Login</button>
+				</form>
+
+				<!-- Registration Form -->
+				<form id="signup-form" class="auth-form" onsubmit="return handleAuthSubmit(event, 'signup')">
+					<div class="form-error" id="signup-error"></div>
+					<div class="form-group">
+						<label for="signup-name">Full Name</label>
+						<input type="text" id="signup-name" placeholder="John Doe" required />
+					</div>
+					<div class="form-group">
+						<label for="signup-email">Email Address</label>
+						<input type="email" id="signup-email" placeholder="you@example.com" required />
+					</div>
+					<div class="form-group">
+						<label for="signup-password">Password</label>
+						<input type="password" id="signup-password" placeholder="•••••••• (min 8 chars)" required />
+					</div>
+					<button type="submit" class="submit-btn">Create Account</button>
+				</form>
+
+				<div class="social-row">
+					<a href="#" class="google">Google</a>
+					<a href="#" class="facebook">Facebook</a>
+					<a href="#" class="wechat">WeChat</a>
+				</div>
+			</div>
+		</div>
+
+		<script src="chat.js"></script>
+		<script>
+			// Modal Toggle Logic
+			const authModal = document.getElementById('auth-modal');
+			const openAuthBtn = document.getElementById('open-auth-btn');
+			const closeModalBtn = document.getElementById('close-modal-btn');
+
+			openAuthBtn.addEventListener('click', () => authModal.classList.add('active'));
+			closeModalBtn.addEventListener('click', () => authModal.classList.remove('active'));
+			authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.remove('active'); });
+
+			function switchTab(type) {
+				document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+				document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+				if (type === 'login') {
+					document.querySelectorAll('.tab-btn')[0].classList.add('active');
+					document.getElementById('login-form').classList.add('active');
+				} else {
+					document.querySelectorAll('.tab-btn')[1].classList.add('active');
+					document.getElementById('signup-form').classList.add('active');
+				}
+			}
+
+			// Real Auth Submit Handler — calls /api/login or /api/signup
+			async function handleAuthSubmit(event, mode) {
+				event.preventDefault();
+				const isLogin = mode === 'login';
+				const email = document.getElementById(isLogin ? 'login-email' : 'signup-email').value.trim();
+				const password = document.getElementById(isLogin ? 'login-password' : 'signup-password').value;
+				const name = isLogin ? undefined : document.getElementById('signup-name').value.trim();
+				const errorEl = document.getElementById(isLogin ? 'login-error' : 'signup-error');
+
+				if (!email || !password || (!isLogin && !name)) { showErr(errorEl, 'Please fill in all fields.'); return false; }
+				if (password.length < 8) { showErr(errorEl, 'Password must be at least 8 characters.'); return false; }
+
+				try {
+					const res = await fetch(`/api/${isLogin ? 'login' : 'signup'}`, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						credentials: 'same-origin',
+						body: JSON.stringify(isLogin ? { email, password } : { name, email, password }),
+					});
+					const data = await res.json();
+					if (res.ok) {
+						authModal.classList.remove('active');
+						openAuthBtn.textContent = data.user?.name?.split(' ')[0] || 'Account';
+						// Reload chat history if any
+						checkSession();
+					} else {
+						showErr(errorEl, data.error || 'Authentication failed.');
+					}
+				} catch (err) {
+					showErr(errorEl, 'Network error. Please try again.');
+				}
+				return false;
+			}
+
+			function showErr(el, msg) { el.textContent = msg; el.classList.add('show'); }
+
+			async function checkSession() {
+				try {
+					const r = await fetch('/api/me', { credentials: 'same-origin' });
+					if (r.ok) { const d = await r.json(); if (d.user) openAuthBtn.textContent = d.user.name.split(' ')[0]; }
+				} catch (e) {}
+			}
+			checkSession();
+		</script>
+	</body>
+</html>
