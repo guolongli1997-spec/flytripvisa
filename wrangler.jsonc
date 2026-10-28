@@ -20,3 +20,16 @@
 	},
 	"upload_source_maps": true
 }
+{
+  // ...
+  "ai": {
+    "binding": "AI"
+  },
+  "d1_databases": [
+    {
+      "binding": "D1",
+      "database_id": "a49b13c8-e420-48b4-8967-f9752e1bc5fa"
+    }
+  ],
+  // ...
+}
