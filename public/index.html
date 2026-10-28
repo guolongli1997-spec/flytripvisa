@@ -1,14 +1,13 @@
-
 <!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
 		<meta
 			name="viewport"
-			content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
 		/>
 		<meta name="theme-color" content="#000000" />
-		<title>Fly AI Chat App By flytripvisa.site</title>
+		<title>Fly AI Chat - ওস্তাদ পমপম</title>
 		<style>
 			:root {
 				--primary-color: #3fbf9f;
@@ -30,10 +29,12 @@
 				-webkit-tap-highlight-color: transparent;
 			}
 
-			html {
+			html, body {
 				height: 100%;
+				width: 100%;
 				background: var(--bg);
 				color-scheme: dark;
+				overflow: hidden; /* প্রিভেন্ট হোল পেজ স্ক্রোলিং অন মোবাইল */
 			}
 
 			body {
@@ -43,26 +44,27 @@
 				font-size: 16px;
 				line-height: 1.5;
 				color: var(--text-color);
-				background: var(--bg);
-				height: 100vh;
-				height: 100dvh;
-				max-width: 760px;
-				margin: 0 auto;
 				display: flex;
 				flex-direction: column;
+				max-width: 760px;
+				margin: 0 auto;
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
 				padding-top: env(safe-area-inset-top, 0px);
-				-webkit-text-size-adjust: 100%;
-				position: relative;
 			}
 
 			header {
-				flex: none;
+				flex: 0 0 52px;
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
-				min-height: 52px;
 				padding: 0 14px;
 				border-bottom: 1px solid var(--border-color);
+				background: var(--bg);
+				z-index: 10;
 			}
 
 			.header-left {
@@ -88,7 +90,6 @@
 				font-weight: 600;
 			}
 
-			/* Header Login/Signup Button */
 			.auth-btn {
 				background-color: var(--surface);
 				color: var(--primary-color);
@@ -106,11 +107,14 @@
 				color: var(--primary-ink);
 			}
 
+			/* Chat Container Layout - মোবাইল কিবোর্ডের সাথে অটো অ্যাডজাস্ট হবে */
 			.chat-container {
 				flex: 1;
-				min-height: 0;
 				display: flex;
 				flex-direction: column;
+				min-height: 0;
+				position: relative;
+				background: var(--bg);
 			}
 
 			.chat-messages {
@@ -125,14 +129,14 @@
 			}
 
 			.message {
-				padding: 9px 14px;
+				padding: 10px 14px;
 				max-width: 88%;
+				word-break: break-word;
 			}
 
 			.message p {
 				white-space: pre-wrap;
 				margin: 0;
-				overflow-wrap: anywhere;
 			}
 
 			.user-message {
@@ -154,7 +158,6 @@
 				border-color: #ff6b6b;
 			}
 
-			/* Space is always reserved, so showing it never shifts the layout */
 			.typing-indicator {
 				flex: none;
 				height: 22px;
@@ -168,13 +171,17 @@
 				visibility: visible;
 			}
 
+			/* Input Area - মোবাইল কিপ্যাডের ঠিক উপরে ফিক্সড থাকবে */
 			.message-input {
-				flex: none;
+				flex: 0 0 auto;
 				display: flex;
 				align-items: flex-end;
 				gap: 8px;
-				padding: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+				padding: 10px 12px;
+				padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
 				border-top: 1px solid var(--border-color);
+				background: var(--bg);
+				z-index: 20;
 			}
 
 			#user-input {
@@ -185,11 +192,10 @@
 				border: 1px solid var(--border-color);
 				border-radius: 22px;
 				font-family: inherit;
-				font-size: 16px; /* prevents iOS zoom on focus */
+				font-size: 16px; /* আইওএস জুমিং প্রিভেন্ট করতে ১৬ পিক্সেল */
 				line-height: 1.4;
 				resize: none;
-				min-height: 44px;
-				max-height: 140px;
+				max-height: 120px;
 				outline: none;
 			}
 
@@ -202,7 +208,7 @@
 			}
 
 			#send-button {
-				flex: none;
+				flex: 0 0 44px;
 				width: 44px;
 				height: 44px;
 				display: grid;
@@ -213,8 +219,7 @@
 				border-radius: 50%;
 				cursor: pointer;
 				touch-action: manipulation;
-				-webkit-appearance: none;
-				appearance: none;
+				transition: opacity 0.2s ease;
 			}
 
 			#send-button svg {
@@ -227,9 +232,8 @@
 				cursor: not-allowed;
 			}
 
-			#send-button:focus-visible {
-				outline: 2px solid var(--primary-color);
-				outline-offset: 2px;
+			#send-button:active {
+				transform: scale(0.95);
 			}
 
 			/* Modal Styles */
@@ -285,11 +289,6 @@
 				line-height: 1;
 			}
 
-			.close-btn:hover {
-				color: var(--text-color);
-			}
-
-			/* Auth Tabs */
 			.auth-tabs {
 				display: flex;
 				gap: 12px;
@@ -360,11 +359,6 @@
 				font-size: 15px;
 				cursor: pointer;
 				margin-top: 8px;
-				transition: opacity 0.2s;
-			}
-
-			.submit-btn:hover {
-				opacity: 0.9;
 			}
 
 			.auth-form {
@@ -382,21 +376,21 @@
 				<div class="mark">AI</div>
 				<h1>Fly AI Chat</h1>
 			</div>
-			<button class="auth-btn" id="open-auth-btn">Login / Sign Up</button>
+			<button class="auth-btn" id="open-auth-btn">Login</button>
 		</header>
 
 		<div class="chat-container">
 			<div id="chat-messages" class="chat-messages">
 				<div class="message assistant-message">
 					<p>
-						Hello! I'm an Fly AI Chat app powered by flytripvisa.site . How can
+						Hello! I'm an LLM chat app powered by Cloudflare Workers AI. How can
 						I help you today?
 					</p>
 				</div>
 			</div>
 
 			<div class="typing-indicator" id="typing-indicator">
-			Fly	AI is thinking...
+				AI is thinking...
 			</div>
 
 			<div class="message-input">
@@ -420,7 +414,7 @@
 			</div>
 		</div>
 
-		<!-- Popup Modal Registration & Login Form -->
+		<!-- Popup Modal -->
 		<div class="modal-overlay" id="auth-modal">
 			<div class="modal-card">
 				<button class="close-btn" id="close-modal-btn">&times;</button>
@@ -430,11 +424,10 @@
 					<button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
 				</div>
 
-				<!-- Login Form -->
 				<form id="login-form" class="auth-form active" onsubmit="handleAuthSubmit(event, 'Login')">
 					<div class="form-group">
 						<label for="login-email">Email Address</label>
-						<input type="email" id="login-email" placeholder="info@flytripvisa.site" required />
+						<input type="email" id="login-email" placeholder="example@domain.com" required />
 					</div>
 					<div class="form-group">
 						<label for="login-password">Password</label>
@@ -443,7 +436,6 @@
 					<button type="submit" class="submit-btn">Login</button>
 				</form>
 
-				<!-- Registration Form -->
 				<form id="signup-form" class="auth-form" onsubmit="handleAuthSubmit(event, 'Registration')">
 					<div class="form-group">
 						<label for="signup-name">Full Name</label>
@@ -463,31 +455,35 @@
 		</div>
 
 		<script>
-			// Modal Toggle Logic
+			// ইনপুট টেক্সট বক্সের ভ্যালু চেক করে সেন্ড বাটন এনেবল/ডিসএবল করার রিয়েল-টাইম লজিক
+			const userInput = document.getElementById('user-input');
+			const sendButton = document.getElementById('send-button');
+
+			userInput.addEventListener('input', function() {
+				if (this.value.trim().length > 0) {
+					sendButton.removeAttribute('disabled');
+				} else {
+					sendButton.setAttribute('disabled', 'true');
+				}
+				// অটো হাইট অ্যাডজাস্টমেন্ট
+				this.style.height = 'auto';
+				this.style.height = (this.scrollHeight) + 'px';
+			});
+
+			// মোডাল লজিক
 			const authModal = document.getElementById('auth-modal');
 			const openAuthBtn = document.getElementById('open-auth-btn');
 			const closeModalBtn = document.getElementById('close-modal-btn');
 
-			openAuthBtn.addEventListener('click', () => {
-				authModal.classList.add('active');
-			});
-
-			closeModalBtn.addEventListener('click', () => {
-				authModal.classList.remove('active');
-			});
-
-			// Close modal on clicking outside card
+			openAuthBtn.addEventListener('click', () => authModal.classList.add('active'));
+			closeModalBtn.addEventListener('click', () => authModal.classList.remove('active'));
 			authModal.addEventListener('click', (e) => {
-				if (e.target === authModal) {
-					authModal.classList.remove('active');
-				}
+				if (e.target === authModal) authModal.classList.remove('active');
 			});
 
-			// Switch between Login and Sign Up tabs
 			function switchTab(type) {
 				const tabs = document.querySelectorAll('.tab-btn');
 				const forms = document.querySelectorAll('.auth-form');
-
 				tabs.forEach(tab => tab.classList.remove('active'));
 				forms.forEach(form => form.classList.remove('active'));
 
@@ -500,14 +496,12 @@
 				}
 			}
 
-			// Dummy Form Submit Handler
 			function handleAuthSubmit(event, formType) {
 				event.preventDefault();
 				alert(`${formType} successful!`);			
 				authModal.classList.remove('active');
 			}
 		</script>
-		<!-- Chat app script -->
 		<script src="chat.js"></script>
 	</body>
 </html>
