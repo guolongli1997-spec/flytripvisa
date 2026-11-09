@@ -1,145 +1,249 @@
 /**
- * Fly AI Chat Client
- * Streams responses from /api/chat via SSE (Workers AI).
- * Maintains message history in-memory for context.
+ * FlyTripVisa AI Chat Client (corrected)
+ * Connects the index.html chat popup to the Cloudflare Worker
+ * streaming endpoint: POST /api/ai-chat (Server-Sent Events).
+ *
+ * Designed for the index.html popup that uses these element IDs:
+ *   chatPopupOverlay, chatPopupMessages, chatPopupInput,
+ *   chatPopupSendBtn, closeChatPopupBtn, navAiChatBtn,
+ *   aiChatInput, aiChatSendBtn
+ * and CSS bubble classes: "chat-msg bot" / "chat-msg user".
+ *
+ * It takes over from the inline placeholder chat (hardcoded replies)
+ * by re-binding the send/input controls after the inline script runs.
  */
+(function () {
+  'use strict';
 
-const chatMessages = document.getElementById("chat-messages");
-const userInput = document.getElementById("user-input");
-const sendButton = document.getElementById("send-button");
-const typingIndicator = document.getElementById("typing-indicator");
+  var ENDPOINT = '/api/ai-chat';
+  var HISTORY_ENDPOINT = '/api/ai-chat/history';
+  var CONV_KEY = 'ftv_conv_id';
+  var MAX_HISTORY = 20;
 
-let messageHistory = [
-  {
-    role: "system",
-    content:
-      "You are Fly AI by flytripvisa.site — a professional travel, visa, flights, and hotels assistant for GCC & Asia. Provide concise, accurate, and helpful responses.",
-  },
-];
+  var overlay, messages, input, sendBtn, closeBtn, heroInput, heroSend, navBtn;
 
-// ---- Auto-resize textarea ----
-function autoResize() {
-  userInput.style.height = "auto";
-  userInput.style.height = Math.min(userInput.scrollHeight, 140) + "px";
-}
+  var state = {
+    conversationId: '',
+    history: [],
+    generating: false,
+    abort: null
+  };
 
-// ---- Send button state ----
-function updateSendButton() {
-  sendButton.disabled = !userInput.value.trim();
-}
+  // ---- DOM helpers ----
+  function $(id) { return document.getElementById(id); }
 
-// ---- Append a message bubble ----
-function appendMessage(text, role) {
-  const div = document.createElement("div");
-  div.className = `message ${role}-message`;
-  const p = document.createElement("p");
-  p.textContent = text;
-  div.appendChild(p);
-  chatMessages.appendChild(div);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-  return div;
-}
+  // Strip any listeners an inline script already attached by cloning the node.
+  function rebind(el) {
+    if (!el) return null;
+    var clone = el.cloneNode(true);
+    el.parentNode.replaceChild(clone, el);
+    return clone;
+  }
 
-// ---- Send message ----
-async function sendMessage() {
-  const text = userInput.value.trim();
-  if (!text) return;
-
-  // Render user message
-  appendMessage(text, "user");
-  messageHistory.push({ role: "user", content: text });
-
-  // Reset input
-  userInput.value = "";
-  autoResize();
-  updateSendButton();
-  typingIndicator.classList.add("visible");
-
-  // Placeholder for assistant reply
-  const assistantDiv = document.createElement("div");
-  assistantDiv.className = "message assistant-message";
-  const assistantP = document.createElement("p");
-  assistantP.textContent = "";
-  assistantDiv.appendChild(assistantP);
-  chatMessages.appendChild(assistantDiv);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-
-  let fullText = "";
-
-  try {
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({ messages: messageHistory }),
+  function scrollBottom() {
+    requestAnimationFrame(function () {
+      if (messages) messages.scrollTop = messages.scrollHeight;
     });
+  }
 
-    if (!response.ok || !response.body) {
-      throw new Error(`Server error: ${response.status}`);
-    }
+  function addBubble(text, role) {
+    var div = document.createElement('div');
+    div.className = 'chat-msg ' + (role === 'user' ? 'user' : 'bot');
+    div.textContent = text;
+    messages.appendChild(div);
+    scrollBottom();
+    return div;
+  }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
+  var typingEl = null;
+  function showTyping() {
+    if (typingEl) return;
+    typingEl = document.createElement('div');
+    typingEl.className = 'chat-msg bot';
+    typingEl.textContent = '● ● ●';
+    typingEl.style.letterSpacing = '4px';
+    messages.appendChild(typingEl);
+    scrollBottom();
+  }
+  function hideTyping() {
+    if (typingEl) { typingEl.remove(); typingEl = null; }
+  }
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+  // ---- persistence ----
+  function loadConv() {
+    try { state.conversationId = localStorage.getItem(CONV_KEY) || ''; } catch (e) {}
+  }
+  function saveConv() {
+    try { localStorage.setItem(CONV_KEY, state.conversationId); } catch (e) {}
+  }
 
-      const chunk = decoder.decode(value, { stream: true });
-      // Workers AI SSE: parse data lines
-      const lines = chunk.split("\n");
-      for (const line of lines) {
-        if (line.startsWith("data:")) {
-          const payload = line.slice(5).trim();
-          if (payload === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(payload);
-            const token =
-              parsed?.response ??
-              parsed?.choices?.[0]?.delta?.content ??
-              parsed?.token ??
-              "";
-            if (token) {
-              fullText += token;
-              assistantP.textContent = fullText;
-              chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-          } catch {
-            // Non-JSON line, skip
+  // ---- send + stream ----
+  function send(text) {
+    text = (text || '').trim();
+    if (!text || state.generating) return;
+
+    addBubble(text, 'user');
+    state.history.push({ role: 'user', content: text });
+
+    input.value = '';
+    showTyping();
+    setGenerating(true);
+
+    var bubble = document.createElement('div');
+    bubble.className = 'chat-msg bot';
+    bubble.textContent = '';
+    messages.appendChild(bubble);
+    scrollBottom();
+
+    var acc = '';
+    state.abort = new AbortController();
+
+    fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: text,
+        conversationId: state.conversationId,
+        history: state.history.slice(-MAX_HISTORY)
+      }),
+      signal: state.abort.signal
+    }).then(function (res) {
+      if (!res.ok) {
+        return res.json().catch(function(){return {};}).then(function(e){
+          throw new Error(e.error || ('Request failed (' + res.status + ')'));
+        });
+      }
+      if (!res.body) throw new Error('No response stream.');
+      return readStream(res.body, bubble, function(tok){ acc += tok; });
+    }).then(function () {
+      hideTyping();
+      if (!acc.trim()) {
+        if (bubble.parentNode) bubble.remove();
+        addBubble('No response received. Please try again.', 'bot');
+      } else {
+        state.history.push({ role: 'assistant', content: acc });
+      }
+      setGenerating(false);
+    }).catch(function (err) {
+      hideTyping();
+      if (bubble.parentNode) bubble.remove();
+      setGenerating(false);
+      if (err.name === 'AbortError') {
+        if (acc.trim()) { addBubble(acc, 'bot'); state.history.push({role:'assistant',content:acc}); }
+        return;
+      }
+      var msg = (err instanceof TypeError) ? 'Network error. Check your connection.' : (err.message || 'Something went wrong.');
+      addBubble(msg, 'bot');
+    });
+  }
+
+  function readStream(body, bubble, onToken) {
+    var reader = body.getReader();
+    var decoder = new TextDecoder();
+    var buffer = '';
+    var acc = '';
+
+    function pump() {
+      return reader.read().then(function (result) {
+        if (result.done) return;
+        buffer += decoder.decode(result.value, { stream: true });
+        var idx;
+        while ((idx = buffer.indexOf('\n\n')) !== -1) {
+          var raw = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+          var evt = 'message', data = '';
+          raw.split('\n').forEach(function (line) {
+            if (line.indexOf('event:') === 0) evt = line.slice(6).trim();
+            else if (line.indexOf('data:') === 0) data += line.slice(5).trim();
+          });
+          if (evt === 'meta') {
+            try { var m = JSON.parse(data); if (m.conversationId) { state.conversationId = m.conversationId; saveConv(); } } catch (e) {}
+          } else if (evt !== 'done') {
+            try {
+              var obj = JSON.parse(data);
+              var tok = obj && (obj.response || obj.token || (obj.choices && obj.choices[0] && obj.choices[0].delta && obj.choices[0].delta.content)) || '';
+              if (tok) { acc += tok; onToken(tok); bubble.textContent = acc; scrollBottom(); }
+            } catch (e) {}
           }
         }
-      }
+        return pump();
+      });
     }
+    return pump();
+  }
 
-    if (fullText) {
-      messageHistory.push({ role: "assistant", content: fullText });
-    } else {
-      assistantP.textContent = "No response received. Please try again.";
-      assistantDiv.classList.add("error");
+  function setGenerating(g) {
+    state.generating = g;
+    if (sendBtn) sendBtn.disabled = g;
+    if (heroSend) heroSend.disabled = g;
+  }
+
+  // ---- popup open/close ----
+  function openPopup(prefill) {
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function(){ input.focus(); }, 200);
+    if (prefill && prefill.trim()) send(prefill);
+  }
+  function closePopup() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // ---- init ----
+  function init() {
+    overlay = $('chatPopupOverlay');
+    messages = $('chatPopupMessages');
+    input = $('chatPopupInput');
+    sendBtn = $('chatPopupSendBtn');
+    closeBtn = $('closeChatPopupBtn');
+    heroInput = $('aiChatInput');
+    heroSend = $('aiChatSendBtn');
+    navBtn = $('navAiChatBtn');
+
+    if (!messages || !input || !sendBtn) return; // chat not present
+
+    loadConv();
+
+    // Re-bind to override the inline placeholder handlers
+    sendBtn = rebind(sendBtn);
+    input = rebind(input);
+    if (heroSend) heroSend = rebind(heroSend);
+    if (heroInput) heroInput = rebind(heroInput);
+    if (navBtn) navBtn = rebind(navBtn);
+    if (closeBtn) closeBtn = rebind(closeBtn);
+
+    sendBtn.addEventListener('click', function () { send(input.value); });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input.value); }
+    });
+    if (closeBtn) closeBtn.addEventListener('click', closePopup);
+    if (overlay) overlay.addEventListener('click', function (e) { if (e.target === overlay) closePopup(); });
+
+    if (heroSend) heroSend.addEventListener('click', function () {
+      var v = heroInput.value.trim(); heroInput.value = ''; openPopup(v);
+    });
+    if (heroInput) heroInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); var v = heroInput.value.trim(); heroInput.value = ''; openPopup(v); }
+    });
+    if (navBtn) navBtn.addEventListener('click', function () { openPopup(''); });
+
+    // optional: load prior server history
+    if (state.conversationId) {
+      fetch(HISTORY_ENDPOINT + '?conversationId=' + encodeURIComponent(state.conversationId))
+        .then(function(r){return r.json();})
+        .then(function(d){
+          if (d && d.messages && d.messages.length) {
+            // keep the welcome bubble, append history
+            d.messages.forEach(function(m){ addBubble(m.content, m.role === 'user' ? 'user' : 'bot'); state.history.push({role:m.role,content:m.content}); });
+          }
+        }).catch(function(){});
     }
-  } catch (error) {
-    console.error("Chat error:", error);
-    assistantP.textContent = "Sorry, something went wrong. Please try again.";
-    assistantDiv.classList.add("error");
-  } finally {
-    typingIndicator.classList.remove("visible");
   }
-}
 
-// ---- Event listeners ----
-userInput.addEventListener("input", () => {
-  autoResize();
-  updateSendButton();
-});
-
-sendButton.addEventListener("click", sendMessage);
-
-userInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
-});
-
-// Initial state
-updateSendButton();
+})();
