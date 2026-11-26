@@ -20,7 +20,7 @@ import {
 // Config
 // ---------------------------------------------------------------------------
 
-const MODEL_ID = "@cf/moonshotai/kimi-k2.6";
+const MODEL_ID = "@cf/google/gemma-4-26b-a4b-it";
 const SYSTEM_PROMPT =
   "You are Fly AI by flytripvisa.site — a professional travel, visa, flights, and hotels assistant for GCC & Asia. " +
   "Provide concise, accurate, and helpful responses. For visa questions, mention requirements vary and users should confirm with our consultants.";
