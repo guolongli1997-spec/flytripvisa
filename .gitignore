@@ -1,0 +1,19 @@
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+.wrangler/
+dist/
+build/
+.next/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+*.log
