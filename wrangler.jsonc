@@ -1,4 +1,3 @@
-
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "flytripvisa",
@@ -8,73 +7,60 @@
     "nodejs_compat",
     "global_fetch_strictly_public"
   ],
-
   "assets": {
     "directory": "./public",
     "binding": "ASSETS"
   },
-
   "observability": {
     "enabled": true
   },
-
   "upload_source_maps": true,
-
   "ai": {
     "binding": "AI"
   },
-
   "ai_search": [
     {
       "binding": "AI_Search",
       "instance_name": "flyai"
     }
   ],
-
   "ai_search_namespaces": [
     {
       "binding": "namespace",
       "namespace": "default"
     }
   ],
-
   "browser": {
     "binding": "Browser"
   },
-
   "d1_databases": [
     {
       "binding": "D1",
       "database_id": "a49b13c8-e420-48b4-8967-f9752e1bc5fa"
     }
   ],
-
   "flagship": [
     {
       "binding": "Flagship",
       "app_id": "4074a887-6f87-4c5b-86e0-9a6d57f635e2"
     }
   ],
-
   "images": {
     "binding": "Images"
   },
-
   "kv_namespaces": [
     {
       "binding": "KV",
       "id": "bbabd52b64084796a44b7e13c1364a0e"
     }
   ],
-
   "r2_buckets": [
     {
       "binding": "R2",
       "bucket_name": "flytripvisa-cloud"
     }
   ],
-
   "stream": {
     "binding": "Stream"
   }
-}, 
+}
